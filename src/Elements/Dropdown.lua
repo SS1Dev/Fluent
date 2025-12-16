@@ -25,6 +25,7 @@ function Element:New(Idx, Config)
 		Opened = false,
 		Type = "Dropdown",
 		Callback = Config.Callback or function() end,
+		SearchText = "", -- เพิ่ม search text state
 	}
 
 	local DropdownFrame = require(Components.Element)(Config.Title, Config.Description, self.Container, false)
@@ -89,9 +90,50 @@ function Element:New(Idx, Config)
 		Padding = UDim.new(0, 3),
 	})
 
-	local DropdownScrollFrame = New("ScrollingFrame", {
-		Size = UDim2.new(1, -5, 1, -10),
+	-- Search Input Box
+	local SearchInput = New("TextBox", {
+		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+		TextColor3 = Color3.fromRGB(200, 200, 200),
+		TextSize = 13,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextYAlignment = Enum.TextYAlignment.Center,
+		PlaceholderText = "ค้นหา...",
+		PlaceholderColor3 = Color3.fromRGB(150, 150, 150),
+		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, -20, 0, 30),
+		Position = UDim2.fromOffset(10, 5),
+		ClearTextOnFocus = false,
+		ThemeTag = {
+			TextColor3 = "Text",
+			PlaceholderColor3 = "SubText",
+		},
+	})
+
+	local SearchFrame = New("Frame", {
+		Size = UDim2.new(1, -10, 0, 40),
 		Position = UDim2.fromOffset(5, 5),
+		BackgroundTransparency = 0.9,
+		ThemeTag = {
+			BackgroundColor3 = "DropdownFrame",
+		},
+	}, {
+		New("UICorner", {
+			CornerRadius = UDim.new(0, 5),
+		}),
+		New("UIStroke", {
+			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+			Transparency = 0.5,
+			ThemeTag = {
+				Color = "InElementBorder",
+			},
+		}),
+		SearchInput,
+	})
+
+	local DropdownScrollFrame = New("ScrollingFrame", {
+		Size = UDim2.new(1, -5, 1, -50), -- ปรับให้อยู่ใต้ search box
+		Position = UDim2.fromOffset(5, 45), -- ย้ายลงมา
 		BackgroundTransparency = 1,
 		BottomImage = "rbxassetid://6889812791",
 		MidImage = "rbxassetid://6889812721",
@@ -111,6 +153,7 @@ function Element:New(Idx, Config)
 			BackgroundColor3 = "DropdownHolder",
 		},
 	}, {
+		SearchFrame,
 		DropdownScrollFrame,
 		New("UICorner", {
 			CornerRadius = UDim.new(0, 7),
@@ -160,10 +203,11 @@ function Element:New(Idx, Config)
 
 	local ListSizeX = 0
 	local function RecalculateListSize()
-		if #Dropdown.Values > 10 then
+		local filteredCount = Dropdown:GetFilteredValuesCount()
+		if filteredCount > 10 then
 			DropdownHolderCanvas.Size = UDim2.fromOffset(ListSizeX, 392)
 		else
-			DropdownHolderCanvas.Size = UDim2.fromOffset(ListSizeX, DropdownListLayout.AbsoluteContentSize.Y + 10)
+			DropdownHolderCanvas.Size = UDim2.fromOffset(ListSizeX, DropdownListLayout.AbsoluteContentSize.Y + 55) -- +55 สำหรับ search box
 		end
 	end
 
@@ -176,6 +220,16 @@ function Element:New(Idx, Config)
 
 	Creator.AddSignal(DropdownInner:GetPropertyChangedSignal("AbsolutePosition"), RecalculateListPosition)
 
+	-- Search functionality
+	local function FilterValues(SearchText)
+		Dropdown.SearchText = SearchText:lower()
+		Dropdown:BuildDropdownList()
+	end
+
+	Creator.AddSignal(SearchInput:GetPropertyChangedSignal("Text"), function()
+		FilterValues(SearchInput.Text)
+	end)
+
 	Creator.AddSignal(DropdownInner.MouseButton1Click, function()
 		Dropdown:Open()
 	end)
@@ -186,13 +240,22 @@ function Element:New(Idx, Config)
 			or Input.UserInputType == Enum.UserInputType.Touch
 		then
 			local AbsPos, AbsSize = DropdownHolderFrame.AbsolutePosition, DropdownHolderFrame.AbsoluteSize
+			-- ตรวจสอบว่าคลิกที่ search input หรือไม่
+			local SearchAbsPos, SearchAbsSize = SearchFrame.AbsolutePosition, SearchFrame.AbsoluteSize
+			local ClickedOnSearch = Mouse.X >= SearchAbsPos.X 
+				and Mouse.X <= SearchAbsPos.X + SearchAbsSize.X
+				and Mouse.Y >= SearchAbsPos.Y 
+				and Mouse.Y <= SearchAbsPos.Y + SearchAbsSize.Y
+			
 			if
 				Mouse.X < AbsPos.X
 				or Mouse.X > AbsPos.X + AbsSize.X
 				or Mouse.Y < (AbsPos.Y - 20 - 1)
 				or Mouse.Y > AbsPos.Y + AbsSize.Y
 			then
-				Dropdown:Close()
+				if not ClickedOnSearch then
+					Dropdown:Close()
+				end
 			end
 		end
 	end)
@@ -202,11 +265,17 @@ function Element:New(Idx, Config)
 		Dropdown.Opened = true
 		ScrollFrame.ScrollingEnabled = false
 		DropdownHolderCanvas.Visible = true
+		-- Reset search เมื่อเปิด
+		Dropdown.SearchText = ""
+		SearchInput.Text = ""
 		TweenService:Create(
 			DropdownHolderFrame,
 			TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
 			{ Size = UDim2.fromScale(1, 1) }
 		):Play()
+		-- Focus search input
+		task.wait(0.1)
+		SearchInput:CaptureFocus()
 	end
 
 	function Dropdown:Close()
@@ -214,6 +283,9 @@ function Element:New(Idx, Config)
 		ScrollFrame.ScrollingEnabled = true
 		DropdownHolderFrame.Size = UDim2.fromScale(1, 0.6)
 		DropdownHolderCanvas.Visible = false
+		-- Reset search เมื่อปิด
+		Dropdown.SearchText = ""
+		SearchInput.Text = ""
 	end
 
 	function Dropdown:Display()
@@ -248,8 +320,27 @@ function Element:New(Idx, Config)
 		end
 	end
 
-	function Dropdown:BuildDropdownList()
+	function Dropdown:GetFilteredValues()
 		local Values = Dropdown.Values
+		if Dropdown.SearchText == "" then
+			return Values
+		end
+		
+		local Filtered = {}
+		for _, Value in next, Values do
+			if string.find(string.lower(tostring(Value)), Dropdown.SearchText, 1, true) then
+				table.insert(Filtered, Value)
+			end
+		end
+		return Filtered
+	end
+
+	function Dropdown:GetFilteredValuesCount()
+		return #Dropdown:GetFilteredValues()
+	end
+
+	function Dropdown:BuildDropdownList()
+		local Values = Dropdown:GetFilteredValues() -- ใช้ filtered values
 		local Buttons = {}
 
 		for _, Element in next, DropdownScrollFrame:GetChildren() do

@@ -22,6 +22,331 @@ local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/
 [Example Script](https://github.com/dawid-scripts/Fluent/blob/master/Example.lua)
 <br/>
 
+---
+
+## 🇹🇭 เอกสารภาษาไทย
+
+### 📖 วิธีใช้งาน (How to Use)
+
+#### 1. โหลด Fluent Library
+
+**วิธีที่ 1: โหลดจาก GitHub Release (แนะนำ)**
+```lua
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+```
+
+**วิธีที่ 2: ใช้ require ใน Roblox Studio**
+```lua
+local Fluent = require(game:GetService("ReplicatedStorage"):WaitForChild("Fluent"))
+```
+
+#### 2. สร้าง Window
+
+```lua
+local Window = Fluent:CreateWindow({
+    Title = "Fluent " .. Fluent.Version,
+    SubTitle = "by dawid",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true, -- เปิดใช้ blur background (ต้องใช้ Graphic Quality 8+)
+    Theme = "Dark", -- เลือกธีม: Dark, Light, Amethyst, Aqua, Rose, Darker
+    MinimizeKey = Enum.KeyCode.LeftControl -- ปุ่มสำหรับย่อหน้าต่าง
+})
+```
+
+#### 3. สร้าง Tabs
+
+```lua
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "box" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+}
+```
+
+#### 4. เพิ่ม Elements ต่างๆ
+
+**Button:**
+```lua
+Tabs.Main:AddButton({
+    Title = "Button",
+    Description = "คำอธิบาย",
+    Callback = function()
+        print("Button clicked!")
+    end
+})
+```
+
+**Toggle:**
+```lua
+local Toggle = Tabs.Main:AddToggle("MyToggle", {
+    Title = "Toggle",
+    Default = false
+})
+
+Toggle:OnChanged(function()
+    print("Toggle value:", Fluent.Options.MyToggle.Value)
+end)
+```
+
+**Checkbox:**
+```lua
+local Checkbox = Tabs.Main:AddCheckbox("MyCheckbox", {
+    Title = "Checkbox",
+    Description = "คำอธิบาย checkbox",
+    Default = false,
+    Callback = function(Value)
+        print("Checkbox value:", Value)
+    end
+})
+
+Checkbox:OnChanged(function(Value)
+    print("Checkbox changed:", Value)
+end)
+
+-- เปลี่ยนค่า
+Checkbox:SetValue(true)
+```
+
+**Slider:**
+```lua
+local Slider = Tabs.Main:AddSlider("MySlider", {
+    Title = "Slider",
+    Description = "คำอธิบาย",
+    Default = 50,
+    Min = 0,
+    Max = 100,
+    Rounding = 0,
+    Callback = function(Value)
+        print("Slider value:", Value)
+    end
+})
+```
+
+**Dropdown:**
+```lua
+local Dropdown = Tabs.Main:AddDropdown("MyDropdown", {
+    Title = "Dropdown",
+    Values = {"ตัวเลือก 1", "ตัวเลือก 2", "ตัวเลือก 3"},
+    Multi = false, -- true สำหรับเลือกหลายตัว
+    Default = 1
+})
+
+Dropdown:OnChanged(function(Value)
+    print("Selected:", Value)
+end)
+```
+
+> **💡 หมายเหตุ:** Dropdown มี Search Box อัตโนมัติ เมื่อเปิด dropdown จะมีช่องค้นหาที่ด้านบนสำหรับกรองรายการตามคำค้นหา
+
+**Colorpicker:**
+```lua
+local Colorpicker = Tabs.Main:AddColorpicker("MyColor", {
+    Title = "Colorpicker",
+    Default = Color3.fromRGB(96, 205, 255)
+})
+
+Colorpicker:OnChanged(function()
+    print("Color:", Colorpicker.Value)
+end)
+```
+
+**Keybind:**
+```lua
+local Keybind = Tabs.Main:AddKeybind("MyKeybind", {
+    Title = "Keybind",
+    Mode = "Toggle", -- "Always", "Toggle", "Hold"
+    Default = "LeftControl",
+    Callback = function(Value)
+        print("Keybind state:", Value)
+    end
+})
+```
+
+**Input:**
+```lua
+local Input = Tabs.Main:AddInput("MyInput", {
+    Title = "Input",
+    Default = "",
+    Placeholder = "พิมพ์ข้อความ...",
+    Numeric = false,
+    Finished = false,
+    Callback = function(Value)
+        print("Input value:", Value)
+    end
+})
+```
+
+**Paragraph:**
+```lua
+Tabs.Main:AddParagraph({
+    Title = "Paragraph",
+    Content = "นี่คือข้อความ\nบรรทัดที่สอง!"
+})
+```
+
+#### 5. Notification
+
+```lua
+Fluent:Notify({
+    Title = "Notification",
+    Content = "นี่คือการแจ้งเตือน",
+    SubContent = "รายละเอียดเพิ่มเติม", -- ไม่บังคับ
+    Duration = 5 -- nil = ไม่หายอัตโนมัติ
+})
+```
+
+#### 6. Dialog
+
+```lua
+Window:Dialog({
+    Title = "ยืนยัน",
+    Content = "คุณต้องการดำเนินการต่อหรือไม่?",
+    Buttons = {
+        {
+            Title = "ยืนยัน",
+            Callback = function()
+                print("ยืนยันแล้ว")
+            end
+        },
+        {
+            Title = "ยกเลิก",
+            Callback = function()
+                print("ยกเลิกแล้ว")
+            end
+        }
+    }
+})
+```
+
+#### 7. ตัวอย่างโค้ดเต็ม
+
+ดูตัวอย่างเพิ่มเติมได้ที่:
+- [Example.lua](Example.lua) - สำหรับใช้กับ loadstring
+- [Example.client.lua](Example.client.lua) - สำหรับใช้กับ require ใน Studio
+
+---
+
+### 🔨 วิธี Build Release เป็น Single File บน GitHub
+
+#### ขั้นตอนการ Build
+
+1. **ติดตั้ง Dependencies:**
+   ```bash
+   # ติดตั้ง pnpm
+   npm install -g pnpm
+   
+   # ติดตั้ง dependencies
+   pnpm install
+   
+   # ติดตั้ง Aftman tools (Rojo, DarkLua, Lune)
+   aftman install
+   ```
+
+2. **Build โปรเจค:**
+   ```bash
+   # Build ด้วย Rojo (สร้าง main.rbxm)
+   pnpm run rojo
+   
+   # Bundle เป็น single file (สร้าง main.lua)
+   pnpm run bundle
+   ```
+
+   หรือรันทั้งสองคำสั่งพร้อมกัน:
+   ```bash
+   pnpm run bundle
+   ```
+
+3. **ไฟล์ที่ได้:**
+   - `dist/main.rbxm` - ไฟล์ Roblox model (สำหรับใช้ใน Studio)
+   - `dist/main.lua` - ไฟล์ single file (สำหรับใช้กับ loadstring)
+
+#### สร้าง GitHub Release อัตโนมัติ
+
+โปรเจคนี้มี GitHub Actions workflow ที่จะ build อัตโนมัติเมื่อสร้าง release:
+
+1. ไปที่ GitHub repository
+2. คลิก **Releases** → **Create a new release**
+3. ตั้ง tag version (เช่น `v1.0.0`)
+4. เขียน release notes
+5. คลิก **Publish release**
+
+GitHub Actions จะ build และอัปโหลดไฟล์ `main.lua` และ `main.rbxm` อัตโนมัติ
+
+#### Build แบบ Manual
+
+หากต้องการ build แบบ manual:
+
+```bash
+# 1. Clone repository
+git clone https://github.com/your-username/Fluent.git
+cd Fluent
+
+# 2. ติดตั้ง dependencies
+pnpm install
+aftman install
+
+# 3. Build
+pnpm run bundle
+
+# 4. ไฟล์ที่ได้จะอยู่ใน dist/
+#    - dist/main.lua (single file สำหรับ loadstring)
+#    - dist/main.rbxm (Roblox model สำหรับ Studio)
+```
+
+---
+
+### 📦 Require อะไรบ้าง (Dependencies)
+
+#### สำหรับใช้งาน (Runtime)
+
+Fluent ไม่ต้องการ dependencies เพิ่มเติมเมื่อใช้ไฟล์ `main.lua` ที่ build แล้ว เพราะทุกอย่างถูกรวมไว้ในไฟล์เดียวแล้ว
+
+#### สำหรับ Development
+
+หากต้องการพัฒนาหรือ build โปรเจคเอง ต้องติดตั้ง:
+
+1. **Node.js และ pnpm:**
+   - Node.js (เวอร์ชัน 16+)
+   - pnpm: `npm install -g pnpm`
+
+2. **Aftman Tools** (ระบุใน `aftman.toml`):
+   - **Rojo** (v7.3.0) - สำหรับ build Roblox project
+   - **DarkLua** (v0.9.0) - สำหรับ minify code
+   - **Lune** (v0.7.6) - สำหรับรัน build script
+
+3. **npm Dependencies** (ระบุใน `package.json`):
+   - `mkdirp` (^3.0.1) - สำหรับสร้าง directory
+
+#### Roblox Services ที่ใช้
+
+Fluent ใช้ Roblox services ต่อไปนี้ (ไม่ต้อง require เพิ่ม):
+
+- `game:GetService("Lighting")`
+- `game:GetService("RunService")`
+- `game:GetService("Players")`
+- `game:GetService("UserInputService")`
+- `game:GetService("TweenService")`
+- `game:GetService("Workspace")`
+- `game:GetService("CoreGui")` (ถ้าไม่ใช่ Studio)
+
+#### Addons (ไม่บังคับ)
+
+Fluent มี Addons เพิ่มเติมที่สามารถใช้ได้:
+
+1. **SaveManager** - สำหรับบันทึก/โหลด config
+   ```lua
+   local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+   SaveManager:SetLibrary(Fluent)
+   ```
+
+2. **InterfaceManager** - สำหรับจัดการ interface
+   ```lua
+   local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+   InterfaceManager:SetLibrary(Fluent)
+   ```
+
+---
+
 ## Credits
 
 - [richie0866/remote-spy](https://github.com/richie0866/remote-spy) - Assets for the UI, some of the code
