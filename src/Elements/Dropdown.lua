@@ -27,6 +27,11 @@ function Element:New(Idx, Config)
 		Callback = Config.Callback or function() end,
 		SearchText = "", -- เพิ่ม search text state
 	}
+	
+	-- Initialize SearchText immediately
+	if not Dropdown.SearchText then
+		Dropdown.SearchText = ""
+	end
 
 	local DropdownFrame = require(Components.Element)(Config.Title, Config.Description, self.Container, false)
 	DropdownFrame.DescLabel.Size = UDim2.new(1, -170, 0, 14)
@@ -201,10 +206,10 @@ function Element:New(Idx, Config)
 			UDim2.fromOffset(DropdownInner.AbsolutePosition.X - 1, DropdownInner.AbsolutePosition.Y - 5 - Add)
 	end
 
-	-- ประกาศ functions สำหรับ search ก่อนที่จะใช้ใน RecalculateListSize
-	function Dropdown:GetFilteredValues()
+	-- ประกาศ local functions สำหรับ search ก่อนที่จะใช้ใน RecalculateListSize
+	local function GetFilteredValues()
 		local Values = Dropdown.Values
-		if Dropdown.SearchText == "" then
+		if not Dropdown.SearchText or Dropdown.SearchText == "" then
 			return Values
 		end
 		
@@ -217,14 +222,20 @@ function Element:New(Idx, Config)
 		return Filtered
 	end
 
-	function Dropdown:GetFilteredValuesCount()
-		return #Dropdown:GetFilteredValues()
+	-- ประกาศเป็น method ของ Dropdown หลังจากที่ Dropdown table ถูกสร้างแล้ว
+	-- รองรับทั้งการเรียกใช้แบบ function และ method
+	Dropdown.GetFilteredValues = function(self)
+		return GetFilteredValues()
+	end
+	Dropdown.GetFilteredValuesCount = function(self)
+		return #GetFilteredValues()
 	end
 
 	local ListSizeX = 0
 	local function RecalculateListSize()
-		local filteredCount = Dropdown:GetFilteredValuesCount()
-		if filteredCount > 10 then
+		-- ใช้ #Dropdown.Values แทน GetFilteredValuesCount เพื่อหลีกเลี่ยงปัญหา
+		local valueCount = #Dropdown.Values
+		if valueCount > 10 then
 			DropdownHolderCanvas.Size = UDim2.fromOffset(ListSizeX, 392)
 		else
 			DropdownHolderCanvas.Size = UDim2.fromOffset(ListSizeX, DropdownListLayout.AbsoluteContentSize.Y + 55) -- +55 สำหรับ search box
@@ -293,9 +304,13 @@ function Element:New(Idx, Config)
 			TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
 			{ Size = UDim2.fromScale(1, 1) }
 		):Play()
-		-- Focus search input
-		task.wait(0.1)
-		SearchInput:CaptureFocus()
+		-- Focus search input (ใช้ task.spawn เพื่อไม่ block)
+		task.spawn(function()
+			task.wait(0.1)
+			if SearchInput and SearchInput.Parent then
+				SearchInput:CaptureFocus()
+			end
+		end)
 	end
 
 	function Dropdown:Close()
@@ -341,7 +356,7 @@ function Element:New(Idx, Config)
 	end
 
 	function Dropdown:BuildDropdownList()
-		local Values = Dropdown:GetFilteredValues() -- ใช้ filtered values
+		local Values = GetFilteredValues() -- ใช้ filtered values
 		local Buttons = {}
 
 		for _, Element in next, DropdownScrollFrame:GetChildren() do
