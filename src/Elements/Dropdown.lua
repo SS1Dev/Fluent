@@ -102,12 +102,12 @@ function Element:New(Idx, Config)
 		TextSize = 13,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextYAlignment = Enum.TextYAlignment.Center,
-		PlaceholderText = "ค้นหา...",
+		PlaceholderText = "Search...",
 		PlaceholderColor3 = Color3.fromRGB(150, 150, 150),
 		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 		BackgroundTransparency = 1,
-		Size = UDim2.new(1, -20, 0, 30),
-		Position = UDim2.fromOffset(10, 5),
+		Size = UDim2.new(1, -16, 0, 24),
+		Position = UDim2.fromOffset(8, 4),
 		ClearTextOnFocus = false,
 		ThemeTag = {
 			TextColor3 = "Text",
@@ -116,7 +116,7 @@ function Element:New(Idx, Config)
 	})
 
 	local SearchFrame = New("Frame", {
-		Size = UDim2.new(1, -10, 0, 40),
+		Size = UDim2.new(1, -10, 0, 32),
 		Position = UDim2.fromOffset(5, 5),
 		BackgroundTransparency = 0.9,
 		ThemeTag = {
@@ -124,7 +124,7 @@ function Element:New(Idx, Config)
 		},
 	}, {
 		New("UICorner", {
-			CornerRadius = UDim.new(0, 5),
+			CornerRadius = UDim.new(0, 4),
 		}),
 		New("UIStroke", {
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
@@ -137,8 +137,8 @@ function Element:New(Idx, Config)
 	})
 
 	local DropdownScrollFrame = New("ScrollingFrame", {
-		Size = UDim2.new(1, -5, 1, -50), -- ปรับให้อยู่ใต้ search box
-		Position = UDim2.fromOffset(5, 45), -- ย้ายลงมา
+		Size = UDim2.new(1, -5, 1, -42), -- ปรับให้อยู่ใต้ search box (ลดจาก 50 เป็น 42)
+		Position = UDim2.fromOffset(5, 37), -- ย้ายลงมา (ลดจาก 45 เป็น 37)
 		BackgroundTransparency = 1,
 		BottomImage = "rbxassetid://6889812791",
 		MidImage = "rbxassetid://6889812721",
@@ -238,7 +238,7 @@ function Element:New(Idx, Config)
 		if valueCount > 10 then
 			DropdownHolderCanvas.Size = UDim2.fromOffset(ListSizeX, 392)
 		else
-			DropdownHolderCanvas.Size = UDim2.fromOffset(ListSizeX, DropdownListLayout.AbsoluteContentSize.Y + 55) -- +55 สำหรับ search box
+			DropdownHolderCanvas.Size = UDim2.fromOffset(ListSizeX, DropdownListLayout.AbsoluteContentSize.Y + 42) -- +42 สำหรับ search box (ลดจาก 55)
 		end
 	end
 
