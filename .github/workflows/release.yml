@@ -27,14 +27,76 @@ jobs:
       uses: ok-nick/setup-aftman@v0.3.0
     
     - name: Install Rojo, Lune and DarkLua
-      run: aftman install
+      run: |
+        echo "=== Installing Aftman tools ==="
+        echo "Aftman version:"
+        aftman --version || echo "WARNING: Cannot get Aftman version"
+        
+        echo ""
+        echo "Trusting tools first..."
+        aftman trust rojo-rbx/rojo 2>&1 | head -5 || echo "Note: rojo trust may have failed (this is OK if already trusted)"
+        aftman trust seaofvoices/darklua 2>&1 | head -5 || echo "Note: darklua trust may have failed (this is OK if already trusted)"
+        aftman trust filiptibell/lune 2>&1 | head -5 || echo "Note: lune trust may have failed (this is OK if already trusted)"
+        
+        echo ""
+        echo "Installing tools..."
+        set +e
+        aftman install 2>&1
+        INSTALL_CODE=$?
+        set -e
+        
+        if [ $INSTALL_CODE -ne 0 ]; then
+          echo "ERROR: Aftman install failed with code $INSTALL_CODE"
+          echo "Checking what went wrong..."
+          echo "Aftman list:"
+          aftman list || echo "Cannot list tools"
+          exit 1
+        fi
+        
+        echo ""
+        echo "=== Verifying installations ==="
+        echo "Checking Rojo..."
+        if rojo --version; then
+          echo "✓ Rojo installed"
+        else
+          echo "✗ ERROR: Rojo not found in PATH"
+          echo "PATH: $PATH"
+          which rojo || echo "rojo not in PATH"
+          exit 1
+        fi
+        
+        echo "Checking DarkLua..."
+        if darklua --version; then
+          echo "✓ DarkLua installed"
+        else
+          echo "✗ ERROR: DarkLua not found in PATH"
+          which darklua || echo "darklua not in PATH"
+          exit 1
+        fi
+        
+        echo "Checking Lune..."
+        if lune --version; then
+          echo "✓ Lune installed"
+        else
+          echo "✗ ERROR: Lune not found in PATH"
+          which lune || echo "lune not in PATH"
+          exit 1
+        fi
+        
+        echo ""
+        echo "✓ All tools installed and verified successfully"
         
     - name: Build and Compile
       run: |
+        echo "Building with Rojo..."
         pnpm run rojo --verbose
+        echo "Rojo build completed"
       
     - name: Bundle Luau
-      run: pnpm run bundle
+      run: |
+        echo "Bundling with Lune..."
+        pnpm run bundle
+        echo "Bundle completed"
       
     - name: Verify Build Files
       run: |
