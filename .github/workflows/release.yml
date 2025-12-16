@@ -36,10 +36,24 @@ jobs:
     - name: Bundle Luau
       run: pnpm run bundle
       
+    - name: Verify Build Files
+      run: |
+        ls -la dist/
+        if [ ! -f "dist/main.lua" ]; then
+          echo "Error: dist/main.lua not found!"
+          exit 1
+        fi
+        if [ ! -f "dist/main.rbxm" ]; then
+          echo "Error: dist/main.rbxm not found!"
+          exit 1
+        fi
+        echo "Build files verified successfully"
+      
     - name: Upload Release Assets
-      uses: alexellis/upload-assets@0.4.0
-      env:
-        ACTIONS_STEP_DEBUG: true
-        GITHUB_TOKEN: ${{ github.token }}
+      uses: softprops/action-gh-release@v1
       with:
-        asset_paths: '["dist/main.rbxm", "dist/main.lua"]'
+        files: |
+          dist/main.rbxm
+          dist/main.lua
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
