@@ -201,6 +201,26 @@ function Element:New(Idx, Config)
 			UDim2.fromOffset(DropdownInner.AbsolutePosition.X - 1, DropdownInner.AbsolutePosition.Y - 5 - Add)
 	end
 
+	-- ประกาศ functions สำหรับ search ก่อนที่จะใช้ใน RecalculateListSize
+	function Dropdown:GetFilteredValues()
+		local Values = Dropdown.Values
+		if Dropdown.SearchText == "" then
+			return Values
+		end
+		
+		local Filtered = {}
+		for _, Value in next, Values do
+			if string.find(string.lower(tostring(Value)), Dropdown.SearchText, 1, true) then
+				table.insert(Filtered, Value)
+			end
+		end
+		return Filtered
+	end
+
+	function Dropdown:GetFilteredValuesCount()
+		return #Dropdown:GetFilteredValues()
+	end
+
 	local ListSizeX = 0
 	local function RecalculateListSize()
 		local filteredCount = Dropdown:GetFilteredValuesCount()
@@ -318,25 +338,6 @@ function Element:New(Idx, Config)
 		else
 			return Dropdown.Value and 1 or 0
 		end
-	end
-
-	function Dropdown:GetFilteredValues()
-		local Values = Dropdown.Values
-		if Dropdown.SearchText == "" then
-			return Values
-		end
-		
-		local Filtered = {}
-		for _, Value in next, Values do
-			if string.find(string.lower(tostring(Value)), Dropdown.SearchText, 1, true) then
-				table.insert(Filtered, Value)
-			end
-		end
-		return Filtered
-	end
-
-	function Dropdown:GetFilteredValuesCount()
-		return #Dropdown:GetFilteredValues()
 	end
 
 	function Dropdown:BuildDropdownList()
