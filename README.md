@@ -264,13 +264,63 @@ Window:Dialog({
 
 โปรเจคนี้มี GitHub Actions workflow ที่จะ build อัตโนมัติเมื่อสร้าง release:
 
-1. ไปที่ GitHub repository
-2. คลิก **Releases** → **Create a new release**
-3. ตั้ง tag version (เช่น `v1.0.0`)
-4. เขียน release notes
-5. คลิก **Publish release**
+**ขั้นตอนการสร้าง Release:**
 
-GitHub Actions จะ build และอัปโหลดไฟล์ `main.lua` และ `main.rbxm` อัตโนมัติ
+1. **เตรียมโค้ดให้พร้อม:**
+   ```bash
+   # Commit และ push การเปลี่ยนแปลงทั้งหมด
+   git add .
+   git commit -m "Prepare for release v1.0.0"
+   git push
+   ```
+
+2. **สร้าง Release บน GitHub:**
+   - ไปที่ GitHub repository ของคุณ
+   - คลิก **Releases** (ด้านขวาของหน้า repository)
+   - คลิก **Create a new release** หรือ **Draft a new release**
+
+3. **ตั้งค่า Release:**
+   - **Choose a tag:** ใส่ tag ใหม่ เช่น `v1.0.0` (หรือเลือก tag ที่มีอยู่แล้ว)
+     - ถ้าเป็น tag ใหม่: เลือก "Create new tag" และใส่ชื่อ tag
+     - ถ้าเป็น tag เก่า: เลือก tag จาก dropdown
+   - **Release title:** ใส่ชื่อ release เช่น "Release v1.0.0"
+   - **Describe this release:** เขียน release notes (ไม่บังคับ)
+   - **Set as a pre-release:** เลือกถ้าต้องการเป็น pre-release
+   - **Set as the latest release:** ปล่อยให้เลือกไว้ (สำหรับ release หลัก)
+
+4. **Publish Release:**
+   - คลิก **Publish release** (หรือ **Update release** ถ้าแก้ไข release ที่มีอยู่)
+
+5. **ตรวจสอบ Workflow:**
+   - ไปที่ **Actions** tab ใน repository
+   - ดู workflow run ที่ชื่อ "Release"
+   - รอให้ workflow ทำงานเสร็จ (ประมาณ 2-3 นาที)
+   - ตรวจสอบว่า workflow ผ่านทุก step:
+     - ✅ Build and Compile
+     - ✅ Bundle Luau
+     - ✅ Verify Build Files
+     - ✅ Upload Release Assets
+
+6. **ตรวจสอบ Assets:**
+   - กลับไปที่ **Releases** page
+   - เปิด release ที่เพิ่งสร้าง
+   - ตรวจสอบว่าในส่วน **Assets** มีไฟล์:
+     - ✅ `main.lua` - สำหรับใช้กับ loadstring
+     - ✅ `main.rbxm` - สำหรับใช้ใน Roblox Studio
+
+**หมายเหตุสำคัญ:**
+- ⚠️ **อย่า** อัปโหลดไฟล์ `main.lua` หรือ `main.rbxm` ด้วยตนเอง เพราะ workflow จะสร้างและอัปโหลดให้อัตโนมัติ
+- ⚠️ ถ้า workflow ล้มเหลว ให้ตรวจสอบ error ใน **Actions** tab
+- ⚠️ ถ้า release ถูกสร้างแล้วแต่ไม่มี assets ให้รอ workflow ให้เสร็จก่อน (อาจใช้เวลาสักครู่)
+
+**วิธีใช้ไฟล์ที่ release แล้ว:**
+```lua
+-- ใช้ main.lua จาก latest release
+local Fluent = loadstring(game:HttpGet("https://github.com/your-username/Fluent/releases/latest/download/main.lua"))()
+
+-- หรือใช้จาก tag เฉพาะ
+local Fluent = loadstring(game:HttpGet("https://github.com/your-username/Fluent/releases/download/v1.0.0/main.lua"))()
+```
 
 #### Build แบบ Manual
 
